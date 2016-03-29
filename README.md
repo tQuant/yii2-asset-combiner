@@ -190,6 +190,9 @@ $config = [
                 'class' => 'AssetCombiner\AssetCombinerBehavior',
             ],
         ],
+        'assetManager' => [
+            'bundles' => require(__DIR__ . '/assets.php'),
+        ],
     ],
 ],
 ```
