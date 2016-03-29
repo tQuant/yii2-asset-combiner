@@ -1,0 +1,26 @@
+{
+    "name": "tquant/yii2-asset-combiner",
+    "description": "Asset combiner for Yii2",
+    "keywords": [
+        "yii2",
+        "asset",
+        "combine",
+        "concat"
+    ],
+    "type": "yii2-extension",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Mikhail Meschangin",
+            "email": "e@albalynx.com"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "~2.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "AssetCombiner": "src"
+        }
+    }
+}
