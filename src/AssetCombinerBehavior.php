@@ -23,6 +23,9 @@ use yii\web\View;
 class AssetCombinerBehavior extends Behavior {
     use AssetCombinerTrait;
 
+    /** @var bool enable asset combiner */
+    public $enabled = true;
+
     /** @var AssetBundle[] */
     protected $bundles = [];
 
@@ -39,6 +42,10 @@ class AssetCombinerBehavior extends Behavior {
      * @param Event $event
      */
     public function combineBundles(Event $event) {
+        if (!$this->enabled) {
+            return;
+        }
+
         $token = 'Combine bundles for page';
         \Yii::beginProfile($token, __METHOD__);
 
