@@ -28,6 +28,9 @@ Note: to use `UglifyJsFilter` and `UglifyCssFilter` you must have installed
 ### Console command
 
 ```php
+Yii::setAlias('@webroot', dirname(__DIR__) . '/web');
+Yii::setAlias('@web', '/');
+
 $config = [
     ...
     'controllerMap' => [
