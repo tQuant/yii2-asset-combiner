@@ -76,7 +76,7 @@ class AssetCombinerController extends Controller {
         ]);
 
         foreach ($files as $file) {
-            $namespace = $this->assetsNamespace . ltrim(str_replace('/', '\\', substr($file, strlen($path))), '\\');
+            $namespace = $this->assetsNamespace . ltrim(str_replace('/', '\\', substr(dirname($file), strlen($path))), '\\');
             $this->bundles[] = $namespace . pathinfo($file, PATHINFO_FILENAME);
         }
 
