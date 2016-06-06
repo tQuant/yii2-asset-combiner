@@ -37,6 +37,9 @@ class AssetCombinerController extends Controller {
     /** @var string assets namespace */
     public $assetsNamespace = 'app\assets';
 
+    /** @var boolean recursive search for assets */
+    public $recursive = true;
+
     /** @var string[] additional asset bundles to process */
     public $bundles = [];
 
@@ -67,10 +70,14 @@ class AssetCombinerController extends Controller {
         }
 
         $bundles = [];
-        $files = FileHelper::findFiles(\Yii::getAlias($this->assetsDir));
+        $path = \Yii::getAlias($this->assetsDir);
+        $files = FileHelper::findFiles($path, [
+            'recursive' => $this->recursive,
+        ]);
 
         foreach ($files as $file) {
-            $this->bundles[] = $this->assetsNamespace . pathinfo($file, PATHINFO_FILENAME);
+            $namespace = $this->assetsNamespace . ltrim(str_replace('/', '\\', substr($file, strlen($path))), '\\');
+            $this->bundles[] = $namespace . pathinfo($file, PATHINFO_FILENAME);
         }
 
         $this->bundles = array_unique($this->bundles);
