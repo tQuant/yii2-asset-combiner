@@ -15,6 +15,9 @@ use AssetCombiner\utils\CssHelper;
  * @package AssetCombiner
  */
 class UglifyCssFilter extends BaseFilter {
+    /** @var string Path to UglifyCss */
+    public $libPath = 'uglifycss';
+
     /**
      * @inheritdoc
      */
@@ -23,7 +26,7 @@ class UglifyCssFilter extends BaseFilter {
         $content = CssHelper::combineFiles($files, $output, true);
         file_put_contents($tmpFile, $content);
 
-        $cmd = 'uglifycss ' . escapeshellarg($tmpFile) . ' > ' . escapeshellarg($output);
+        $cmd = $this->libPath . ' ' . escapeshellarg($tmpFile) . ' > ' . escapeshellarg($output);
         shell_exec($cmd);
 
         unlink($tmpFile);

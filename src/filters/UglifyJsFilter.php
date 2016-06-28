@@ -13,6 +13,9 @@ namespace AssetCombiner\filters;
  * @package AssetCombiner
  */
 class UglifyJsFilter extends BaseFilter {
+    /** @var string Path to UglifyJs */
+    public $libPath = 'uglifyjs';
+
     /** @var bool Add source map generation */
     public $sourceMap = false;
 
@@ -33,7 +36,7 @@ class UglifyJsFilter extends BaseFilter {
             $files[$i] = escapeshellarg($file);
         }
 
-        $cmd = 'uglifyjs ' . implode(' ', $files) . ' -o ' . escapeshellarg($output);
+        $cmd = $this->libPath . ' ' . implode(' ', $files) . ' -o ' . escapeshellarg($output);
 
         if ($this->sourceMap) {
             $prefix = (int)substr_count(\Yii::getAlias('@webroot'), '/');
