@@ -136,10 +136,16 @@ EOD;
             $this->collectAssetFiles($bundle, $files);
         }
 
+        if (!empty($files['externalJs'])) {
+            $js = $files['externalJs'];
+        }
         if (!empty($files['js']) && !empty($files['jsHash'])) {
             $js[] = $this->writeFiles($files, 'js');
         }
 
+        if (!empty($files['externalCss'])) {
+            $css = $files['externalCss'];
+        }
         if (!empty($files['css']) && !empty($files['cssHash'])) {
             $css[] = $this->writeFiles($files, 'css');
         }

@@ -145,6 +145,8 @@ trait AssetCombinerTrait {
             if ($path) {
                 $files['js'][] = $path;
                 $files['jsHash'] .= '|' . filemtime($path);
+            } else {
+                $files['externalJs'][] = $file;
             }
         }
         foreach ($bundle->css as $css) {
@@ -153,6 +155,8 @@ trait AssetCombinerTrait {
             if ($path) {
                 $files['css'][] = $path;
                 $files['cssHash'] .= '|' . filemtime($path);
+            } else {
+                $files['externalCss'][] = $file;
             }
         }
     }

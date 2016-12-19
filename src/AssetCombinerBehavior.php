@@ -116,11 +116,21 @@ class AssetCombinerBehavior extends Behavior {
             $this->collectFiles($name, $files);
         }
 
+        if (!empty($files['externalJs'])) {
+            foreach ($files['externalJs'] as $file) {
+                $this->owner->registerJsFile($file, $jsOptions);
+            }
+        }
         if (!empty($files['js']) && !empty($files['jsHash'])) {
             $filename = $this->writeFiles($files, 'js');
             $this->owner->registerJsFile($this->outputUrl . '/' . $filename, $jsOptions);
         }
 
+        if (!empty($files['externalCss'])) {
+            foreach ($files['externalCss'] as $file) {
+                $this->owner->registerCssFile($file, $cssOptions);
+            }
+        }
         if (!empty($files['css']) && !empty($files['cssHash'])) {
             $filename = $this->writeFiles($files, 'css');
             $this->owner->registerCssFile($this->outputUrl . '/' . $filename, $cssOptions);
