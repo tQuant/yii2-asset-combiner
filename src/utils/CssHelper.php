@@ -17,13 +17,39 @@ use yii\helpers\Url;
  */
 abstract class CssHelper {
     /**
+     * Find common root in files
+     * @param array $files
+     * @return string
+     */
+    public static function findRoot(array $files) {
+        if (!$files) {
+            return '';
+        }
+        $first = array_shift($files);
+        $commonParts = explode('/', $first);
+        foreach ($files as $file) {
+            $stop = false;
+            $fileParts = explode('/', $file);
+            foreach ($commonParts as $i => $part) {
+                if ($stop || count($fileParts) < $i) {
+                    unset($commonParts[$i]);
+                } elseif ($part !== $fileParts[$i]) {
+                    $stop = true;
+                    unset($commonParts[$i]);
+                }
+            }
+        }
+        return implode('/', $commonParts);
+    }
+
+    /**
      * @param string[] $files
      * @param string $output
      * @param boolean $return Return content or save to $output
      * @return string|bool
      */
     public static function combineFiles($files, $output, $return = false) {
-        $path = \Yii::getAlias('@webroot');
+        $path = \Yii::getAlias('@webroot', false) ?: '';
         $imports = [];
         $content = '';
         $importsStr = '';
@@ -58,7 +84,7 @@ abstract class CssHelper {
 
         // Относительный путь
         $path = '';
-        while (0 !== strpos($dirFrom, $dirTo)) {
+        while (0 !== strpos($dirFrom . '/', $dirTo . '/')) {
             $path .= '../';
             if (false !== ($pos = strrpos($dirTo, '/'))) {
                 $dirTo = substr($dirTo, 0, $pos);

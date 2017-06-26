@@ -28,14 +28,15 @@ Note: to use `UglifyJsFilter` and `UglifyCssFilter` you must have installed
 ### Console command
 
 ```php
-Yii::setAlias('@webroot', dirname(__DIR__) . '/web');
-Yii::setAlias('@web', '/');
-
 $config = [
     ...
     'controllerMap' => [
         'asset-combiner' => [
             'class' => 'AssetCombiner\AssetCombinerController',
+            'aliases' => [
+                '@webroot' => '@app/web',
+                '@web' => '/',
+            ],
             'assetManager' => [
                 'basePath' => '@webroot/assets',
                 'baseUrl' => '@web/assets',
@@ -50,6 +51,12 @@ $config = [
 
             // assets namespace
             //'assetsNamespace' => 'app\assets',
+            
+            // recursive search for assets
+            //'recursive' => true,
+            
+            // process dependent assets
+            //'processDependent' => true,
 
             // Additional bundles to minify
             //'bundles' => [

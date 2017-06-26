@@ -31,11 +31,17 @@ class AssetCombinerController extends Controller {
     /** @var string controller default action ID. */
     public $defaultAction = 'combine';
 
+    /** @var array list of aliases that need to add before bundles (@webroot etc.) */
+    public $aliases = [];
+
     /** @var string directory where all assets stored */
     public $assetsDir = '@app/assets';
 
     /** @var string assets namespace */
     public $assetsNamespace = 'app\assets';
+
+    /** @var string process dependent assets */
+    public $processDependent = false;
 
     /** @var boolean recursive search for assets */
     public $recursive = true;
@@ -53,6 +59,10 @@ class AssetCombinerController extends Controller {
      * @inheritdoc
      */
     public function init() {
+        foreach ($this->aliases as $alias => $path) {
+            Yii::setAlias($alias, Yii::getAlias($path));
+        }
+
         $this->assetsNamespace = trim($this->assetsNamespace, '\\') . '\\';
         $this->traitInit();
     }
@@ -69,7 +79,6 @@ class AssetCombinerController extends Controller {
             unlink($configFile);
         }
 
-        $bundles = [];
         $path = \Yii::getAlias($this->assetsDir);
         $files = FileHelper::findFiles($path, [
             'recursive' => $this->recursive,
@@ -82,6 +91,16 @@ class AssetCombinerController extends Controller {
 
         $this->bundles = array_unique($this->bundles);
 
+        // Add dependency bundles
+        if ($this->processDependent) {
+            $bundles = [];
+            foreach ($this->bundles as $name) {
+                $this->collectDependentBundles($name, $bundles, false);
+            }
+            $this->bundles = array_unique(array_merge($this->bundles, array_keys($bundles)));
+        }
+
+        $bundles = [];
         foreach ($this->bundles as $name) {
             $this->stdout("Creating output bundle ");
             $this->stdout("'{$name}'", Console::FG_YELLOW);
@@ -190,6 +209,7 @@ EOD;
      * @param integer|null $position if set, this forces a minimum position for javascript files.
      * This will adjust depending assets javascript file position or fail if requirement can not be met.
      * If this is null, asset bundles position settings will not be changed.
+     * If this is false, position options will not taken into account.
      * @throws InvalidConfigException if the asset bundle does not exist or a circular dependency is detected
      */
     public function collectDependentBundles($name, &$bundles, $position = null) {
@@ -200,7 +220,7 @@ EOD;
             // register dependencies
             $pos = isset($bundle->jsOptions['position']) ? $bundle->jsOptions['position'] : null;
             foreach ($bundle->depends as $dep) {
-                $this->collectDependentBundles($dep, $bundles, $pos);
+                $this->collectDependentBundles($dep, $bundles, $position === false ? false : $pos);
             }
             $bundles[$name] = $bundle;
         } elseif ($bundles[$name] === false) {
@@ -209,7 +229,7 @@ EOD;
             $bundle = $bundles[$name];
         }
 
-        if ($position !== null) {
+        if ($position !== null && $position !== false) {
             $pos = isset($bundle->jsOptions['position']) ? $bundle->jsOptions['position'] : null;
             if ($pos === null) {
                 $bundle->jsOptions['position'] = $pos = $position;
