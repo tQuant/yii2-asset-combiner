@@ -32,6 +32,8 @@ trait AssetCombinerTrait {
     public $outputPath = '@webroot/assets/ac';
     /** @var string Output url for combined files */
     public $outputUrl = '@web/assets/ac';
+    /** @var string Output url for combined files */
+    public $fileHashFunction = 'filemtime';
 
     /** @var BaseFilter */
     protected $_filterJs;
@@ -144,7 +146,7 @@ trait AssetCombinerTrait {
             $path = $manager->getAssetPath($bundle, $file);
             if ($path) {
                 $files['js'][] = $path;
-                $files['jsHash'] .= '|' . filemtime($path);
+                $files['jsHash'] .= '|' . call_user_func($this->fileHashFunction, $path);
             } else {
                 $files['externalJs'][] = $file;
             }
@@ -154,7 +156,7 @@ trait AssetCombinerTrait {
             $path = $manager->getAssetPath($bundle, $file);
             if ($path) {
                 $files['css'][] = $path;
-                $files['cssHash'] .= '|' . filemtime($path);
+                $files['cssHash'] .= '|' . call_user_func($this->fileHashFunction, $path);
             } else {
                 $files['externalCss'][] = $file;
             }

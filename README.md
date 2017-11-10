@@ -28,8 +28,9 @@ Note: to use `UglifyJsFilter` and `UglifyCssFilter` you must have installed
 ### Console command
 
 ```php
+<?php
 $config = [
-    ...
+    //...
     'controllerMap' => [
         'asset-combiner' => [
             'class' => 'AssetCombiner\AssetCombinerController',
@@ -63,6 +64,9 @@ $config = [
             //    'yii\web\YiiAsset',
             //    'yii\web\JqueryAsset',
             //],
+            
+            // Function to calc the file hash, by default is "filemtime"
+            //'fileHashFunction' => function ($path) {return hash_file('crc32', $path);},
 
             // Filter to process JS files. If not set, then SimpleJsFilter will be used
             'filterJs' => [
@@ -76,7 +80,7 @@ $config = [
             'filterCss' => 'AssetCombiner\filters\UglifyCssFilter',
         ],
     ],
-],
+];
 ```
 
 ### View behavior
@@ -166,8 +170,9 @@ If you want concatenate and compress files while maintaining performance then yo
 Compress all assets in console after each changes:
 
 ```php
+<?php
 $config = [
-    ...
+    // ...
     'controllerMap' => [
         'asset-combiner' => [
             'class' => 'AssetCombiner\AssetCombinerController',
@@ -182,18 +187,21 @@ $config = [
                 'mangle' => true,
             ],
             'filterCss' => 'AssetCombiner\filters\UglifyCssFilter',
+            // Function to calc the file hash, by default is "filemtime"
+            //'fileHashFunction' => function ($path) {return hash_file('crc32', $path);},
         ],
     ],
-],
+];
 ```
 
 And then concatenate already compressed files for each page on the fly
 
 ```php
+<?php
 $config = [
-    ...
+    //...
     'components' => [
-        ...
+        //...
         'view' => [
             'class' => 'yii\web\View',
             'as assetCombiner' => [
@@ -204,5 +212,5 @@ $config = [
             'bundles' => require(__DIR__ . '/assets.php'),
         ],
     ],
-],
+];
 ```
