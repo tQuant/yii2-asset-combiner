@@ -32,7 +32,9 @@ trait AssetCombinerTrait {
     public $outputPath = '@webroot/assets/ac';
     /** @var string Output url for combined files */
     public $outputUrl = '@web/assets/ac';
-    /** @var string Output url for combined files */
+    /** @var string Use file path to generate first part of the name. If FALSE only name will be used */
+    public $useFilePathForHash = true;
+    /** @var string File hash function to generate second part of the name */
     public $fileHashFunction = 'filemtime';
 
     /** @var BaseFilter */
@@ -170,7 +172,8 @@ trait AssetCombinerTrait {
      * @throws Exception
      */
     protected function writeFiles($files, $type) {
-        $hash = sprintf('%x', crc32(implode('|', $files[$type]) . \Yii::getVersion()))
+        $names = implode('|', $this->useFilePathForHash ? $files[$type] : array_map('basename', $files[$type]));
+        $hash = sprintf('%x', crc32($names . \Yii::getVersion()))
             . '-' . sprintf('%x', crc32($files[$type . 'Hash'] . \Yii::getVersion()));
         $output = $this->outputPath . DIRECTORY_SEPARATOR . $hash . '.' . $type;
 
