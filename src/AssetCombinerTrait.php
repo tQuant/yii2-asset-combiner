@@ -48,7 +48,6 @@ trait AssetCombinerTrait {
      * Resolve aliases
      */
     public function init() {
-        $this->outputUrl = Yii::getAlias($this->outputUrl);
         $this->outputPath = Yii::getAlias($this->outputPath);
         if (!FileHelper::createDirectory($this->outputPath, 0777)) {
             throw new InvalidConfigException("Failed to create directory: {$this->outputPath}");
