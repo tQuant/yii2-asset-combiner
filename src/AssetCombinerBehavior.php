@@ -25,6 +25,8 @@ class AssetCombinerBehavior extends Behavior {
 
     /** @var bool enable asset combiner */
     public $enabled = true;
+    /** @var array action uniqueIds where behavior must be disabled */
+    public $exceptActions = [];
 
     /** @var AssetBundle[] */
     protected $bundles = [];
@@ -40,10 +42,20 @@ class AssetCombinerBehavior extends Behavior {
 
     /**
      * @param Event $event
+     * @throws \yii\base\Exception
      */
     public function combineBundles(Event $event) {
         if (!$this->enabled) {
             return;
+        }
+        if ($this->exceptActions && \Yii::$app->controller->action) {
+            $actionId = \Yii::$app->controller->action->uniqueId;
+            foreach ($this->exceptActions as $id) {
+                $prefix = rtrim($id, '*');
+                if (($actionId === $id || $prefix !== $id) && strpos($actionId, $prefix) === 0) {
+                    return;
+                }
+            }
         }
 
         $token = 'Combine bundles for page';
@@ -103,6 +115,7 @@ class AssetCombinerBehavior extends Behavior {
      * @param AssetBundle[] $bundles
      * @param array $jsOptions
      * @param array $cssOptions
+     * @throws \yii\base\Exception
      */
     public function assembleMonolith($bundles, $jsOptions = [], $cssOptions = []) {
         $files = [
