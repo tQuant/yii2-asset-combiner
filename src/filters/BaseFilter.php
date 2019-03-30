@@ -8,13 +8,13 @@
 
 namespace AssetCombiner\filters;
 
-use yii\base\Object;
+use yii\base\BaseObject;
 
 /**
  * Class BaseFilter
  * @package AssetCombiner
  */
-abstract class BaseFilter extends Object {
+abstract class BaseFilter extends BaseObject {
     /**
      * @param string[] $files
      * @param string $output
