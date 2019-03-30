@@ -12,11 +12,11 @@
     "authors": [
         {
             "name": "Mikhail Meschangin",
-            "email": "e@albalynx.com"
+            "email": "wolfhound512@yandex.ru"
         }
     ],
     "require": {
-        "yiisoft/yii2": "~2.0.0"
+        "yiisoft/yii2": "~2.0.13"
     },
     "autoload": {
         "psr-4": {
