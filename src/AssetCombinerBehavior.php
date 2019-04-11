@@ -115,9 +115,10 @@ class AssetCombinerBehavior extends Behavior {
      * @param AssetBundle[] $bundles
      * @param array $jsOptions
      * @param array $cssOptions
+     * @param bool $changed
      * @throws \yii\base\Exception
      */
-    public function assembleMonolith($bundles, $jsOptions = [], $cssOptions = []) {
+    public function assembleMonolith($bundles, $jsOptions = [], $cssOptions = [], $changed = null) {
         $files = [
             'js' => [],
             'css' => [],
@@ -135,7 +136,7 @@ class AssetCombinerBehavior extends Behavior {
             }
         }
         if (!empty($files['js']) && !empty($files['jsHash'])) {
-            $filename = $this->writeFiles($files, 'js');
+            $filename = $this->writeFiles($files, 'js', $changed);
             $this->owner->registerJsFile($this->outputUrl . '/' . $filename, $jsOptions);
         }
 
@@ -145,7 +146,7 @@ class AssetCombinerBehavior extends Behavior {
             }
         }
         if (!empty($files['css']) && !empty($files['cssHash'])) {
-            $filename = $this->writeFiles($files, 'css');
+            $filename = $this->writeFiles($files, 'css', $changed);
             $this->owner->registerCssFile($this->outputUrl . '/' . $filename, $cssOptions);
         }
     }

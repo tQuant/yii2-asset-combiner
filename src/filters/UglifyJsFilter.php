@@ -29,16 +29,73 @@ class UglifyJsFilter extends BaseFilter {
     public $options = false;
 
     /**
+     * @var boolean Skip minification for files with ".min." in the name.
+     * If enabled and min file is found - sourceMap settings will be ignored
+     */
+    public $skipMinFiles = false;
+
+    /**
      * @inheritdoc
      */
     public function process($files, $output) {
+        if ($this->skipMinFiles) {
+            $content = '';
+            $group = [];
+            foreach ($files as $i => $file) {
+                // Check if file is already minified
+                if (strpos($file, '.min.') !== false) {
+                    if ($group && !$this->minifyGroup($group, $content)) {
+                        return false;
+                    }
+                    $group = [];
+                    $content .= file_get_contents($file) . "\n";
+                } else {
+                    $group[] = $file;
+                }
+            }
+            // If there is no minified files
+            if ($group && !$content) {
+                return $this->minify($files, $output, false);
+            }
+            if ($group && !$this->minifyGroup($group, $content)) {
+                return false;
+            }
+            file_put_contents($output, $content);
+            return true;
+        } else {
+            return $this->minify($files, $output, false);
+        }
+    }
+
+    /**
+     * @param $files
+     * @param $content
+     * @return bool
+     */
+    protected function minifyGroup($files, &$content) {
+        $tmp = tempnam(\Yii::getAlias('@runtime'), 'ac-');
+        if (!$this->minify($files, $tmp, true)) {
+            return false;
+        }
+        $content .= file_get_contents($tmp) . "\n";
+        unlink($tmp);
+        return true;
+    }
+
+    /**
+     * @param $files
+     * @param $output
+     * @param $ignoreSourceMap
+     * @return bool
+     */
+    protected function minify($files, $output, $ignoreSourceMap) {
         foreach ($files as $i => $file) {
             $files[$i] = escapeshellarg($file);
         }
 
         $cmd = $this->libPath . ' ' . implode(' ', $files) . ' -o ' . escapeshellarg($output);
 
-        if ($this->sourceMap) {
+        if ($this->sourceMap && !$ignoreSourceMap) {
             $prefix = (int)substr_count(\Yii::getAlias('@webroot'), '/');
             $mapFile = escapeshellarg($output . '.map');
             $mapRoot = escapeshellarg(rtrim(\Yii::getAlias('@web'), '/') . '/');

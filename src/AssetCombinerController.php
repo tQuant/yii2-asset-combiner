@@ -71,7 +71,7 @@ class AssetCombinerController extends Controller {
      * Combines and compresses all files into one for each AssetBundle.
      * @param string $configFile Output config file with processed bundles
      * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function actionCombine($configFile) {
         // Remove existing config
@@ -79,7 +79,7 @@ class AssetCombinerController extends Controller {
             unlink($configFile);
         }
 
-        $path = \Yii::getAlias($this->assetsDir);
+        $path = Yii::getAlias($this->assetsDir);
         $files = FileHelper::findFiles($path, [
             'recursive' => $this->recursive,
         ]);
@@ -101,12 +101,30 @@ class AssetCombinerController extends Controller {
         }
 
         $bundles = [];
+        $hasErrors = false;
         foreach ($this->bundles as $name) {
-            $this->stdout("Creating output bundle ");
-            $this->stdout("'{$name}'", Console::FG_YELLOW);
-            $this->stdout(": ");
-            $bundles[$name] = $this->assembleBundle($name);
-            $this->stdout("OK\n", Console::FG_GREEN);
+            try {
+                $changed = false;
+                $bundles[$name] = $this->assembleBundle($name, $changed);
+                if ($changed) {
+                    $this->stdout("Creating output bundle ");
+                    $this->stdout("'{$name}'", Console::FG_YELLOW);
+                    $this->stdout(": ");
+                    $this->stdout("OK\n", Console::FG_GREEN);
+                }
+            } catch (\Exception $e) {
+                Yii::error($e, __METHOD__);
+                $this->stdout("Creating output bundle ");
+                $this->stdout("'{$name}'", Console::FG_YELLOW);
+                $this->stdout(": ");
+                $this->stdout("FAIL\n", Console::FG_RED);
+                $hasErrors = true;
+            }
+        }
+
+        if ($hasErrors) {
+            $this->stdout("Errors occurred during generation. Configuration file was not created.\n", Console::FG_RED);
+            return;
         }
 
         $array = VarDumper::export($bundles);
@@ -130,11 +148,12 @@ EOD;
 
     /**
      * @param string $name
+     * @param $changed
      * @return array
+     * @throws InvalidConfigException
      * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
      */
-    public function assembleBundle($name) {
+    public function assembleBundle($name, &$changed) {
         $files = [
             'js' => [],
             'css' => [],
@@ -159,14 +178,14 @@ EOD;
             $js = $files['externalJs'];
         }
         if (!empty($files['js']) && !empty($files['jsHash'])) {
-            $js[] = $this->writeFiles($files, 'js');
+            $js[] = $this->writeFiles($files, 'js', $changed);
         }
 
         if (!empty($files['externalCss'])) {
             $css = $files['externalCss'];
         }
         if (!empty($files['css']) && !empty($files['cssHash'])) {
-            $css[] = $this->writeFiles($files, 'css');
+            $css[] = $this->writeFiles($files, 'css', $changed);
         }
 
         return [
@@ -187,6 +206,7 @@ EOD;
      * @param string $name
      * @param string[] $files
      * @param AssetBundle[] $bundles
+     * @throws \yii\base\Exception
      */
     protected function collectAllFiles($name, &$files, &$bundles) {
         if (!isset($bundles[$name])) {
@@ -211,6 +231,7 @@ EOD;
      * If this is null, asset bundles position settings will not be changed.
      * If this is false, position options will not taken into account.
      * @throws InvalidConfigException if the asset bundle does not exist or a circular dependency is detected
+     * @throws \yii\base\Exception
      */
     public function collectDependentBundles($name, &$bundles, $position = null) {
         if (!isset($bundles[$name])) {

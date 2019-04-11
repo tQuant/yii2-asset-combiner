@@ -95,6 +95,7 @@ trait AssetCombinerTrait {
 
     /**
      * @return BaseFilter
+     * @throws InvalidConfigException
      */
     public function getFilter($type) {
         if ($type == 'js') {
@@ -108,6 +109,7 @@ trait AssetCombinerTrait {
 
     /**
      * @return BaseFilter
+     * @throws InvalidConfigException
      */
     public function getJsFilter() {
         if ($this->_filterJs === null) {
@@ -123,6 +125,7 @@ trait AssetCombinerTrait {
 
     /**
      * @return BaseFilter
+     * @throws InvalidConfigException
      */
     public function getCssFilter() {
         if ($this->_filterCss === null) {
@@ -139,6 +142,7 @@ trait AssetCombinerTrait {
     /**
      * @param AssetBundle $bundle
      * @param array $files
+     * @throws Exception
      */
     protected function collectAssetFiles($bundle, &$files) {
         $manager = $this->getAssetManager();
@@ -170,13 +174,14 @@ trait AssetCombinerTrait {
      * @return string
      * @throws Exception
      */
-    protected function writeFiles($files, $type) {
+    protected function writeFiles($files, $type, &$changed) {
         $names = implode('|', $this->useFilePathForHash ? $files[$type] : array_map('basename', $files[$type]));
         $hash = sprintf('%x', crc32($names . \Yii::getVersion()))
             . '-' . sprintf('%x', crc32($files[$type . 'Hash'] . \Yii::getVersion()));
         $output = $this->outputPath . DIRECTORY_SEPARATOR . $hash . '.' . $type;
 
         if (!file_exists($output)) {
+            $changed = true;
             $token = 'Write combined files to disk: ' . $output;
             \Yii::beginProfile($token, __METHOD__);
 
