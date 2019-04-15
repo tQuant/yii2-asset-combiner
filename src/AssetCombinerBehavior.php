@@ -63,6 +63,7 @@ class AssetCombinerBehavior extends Behavior {
 
         $this->bundles = $this->owner->assetBundles;
         $this->setAssetManager($this->owner->getAssetManager());
+        $this->owner->assetBundles = [];
 
         // Assemble monolith assets
         foreach ($this->bundles as $name => $bundle) {
@@ -80,8 +81,6 @@ class AssetCombinerBehavior extends Behavior {
         }
         // Assemble rest of the assets
         $this->assembleMonolith($this->bundles);
-
-        $this->owner->assetBundles = [];
 
         \Yii::endProfile($token, __METHOD__);
     }
@@ -124,6 +123,7 @@ class AssetCombinerBehavior extends Behavior {
             'css' => [],
             'jsHash' => '',
             'cssHash' => '',
+            'inlineBundles' => [],
         ];
 
         foreach ($bundles as $name => $bundle) {
@@ -149,11 +149,15 @@ class AssetCombinerBehavior extends Behavior {
             $filename = $this->writeFiles($files, 'css', $changed);
             $this->owner->registerCssFile($this->outputUrl . '/' . $filename, $cssOptions);
         }
+        foreach ($files['inlineBundles'] as $name => $bundle) {
+            $this->owner->assetBundles[$name] = $bundle;
+        }
     }
 
     /**
      * @param $name
      * @param $files
+     * @throws \yii\base\Exception
      */
     protected function collectFiles($name, &$files) {
         if (!isset($this->bundles[$name])) {
@@ -164,7 +168,13 @@ class AssetCombinerBehavior extends Behavior {
             foreach ($bundle->depends as $dep) {
                 $this->collectFiles($dep, $files);
             }
-            $this->collectAssetFiles($bundle, $files);
+            // If file registered inline without bundle, skip it
+            if (!$bundle->basePath && !$bundle->sourcePath) {
+                $bundle->depends = [];
+                $files['inlineBundles'][$name] = $bundle;
+            } else {
+                $this->collectAssetFiles($bundle, $files);
+            }
         }
         unset($this->bundles[$name]);
     }
