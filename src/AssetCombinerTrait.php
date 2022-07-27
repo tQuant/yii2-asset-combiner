@@ -190,6 +190,10 @@ trait AssetCombinerTrait {
             if (!$filter->process($files[$type], $output)) {
                 throw new Exception("Failed to process files with filter '" . $filter->className() . "'");
             }
+            if (!filesize($output)) {
+                @unlink($output);
+                throw new Exception("Got empty output by filter '" . $filter->className() . "'");
+            }
 
             \Yii::endProfile($token, __METHOD__);
         }
