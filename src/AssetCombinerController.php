@@ -34,7 +34,7 @@ class AssetCombinerController extends Controller {
     /** @var array list of aliases that need to add before bundles (@webroot etc.) */
     public $aliases = [];
 
-    /** @var string directory where all assets stored */
+    /** @var string|array directory where all assets stored */
     public $assetsDir = '@app/assets';
 
     /** @var string assets namespace */
@@ -63,7 +63,15 @@ class AssetCombinerController extends Controller {
             Yii::setAlias($alias, Yii::getAlias($path));
         }
 
-        $this->assetsNamespace = trim($this->assetsNamespace, '\\') . '\\';
+        if (!is_array($this->assetsDir)) {
+            $this->assetsDir = [$this->assetsNamespace => $this->assetsDir];
+        }
+        $dirs = [];
+        foreach ($this->assetsDir as $namespace => $directory) {
+            $dirs[trim($namespace, '\\') . '\\'] = Yii::getAlias($directory);
+        }
+        $this->assetsDir = $dirs;
+
         $this->traitInit();
     }
 
@@ -79,14 +87,15 @@ class AssetCombinerController extends Controller {
             unlink($configFile);
         }
 
-        $path = Yii::getAlias($this->assetsDir);
-        $files = FileHelper::findFiles($path, [
-            'recursive' => $this->recursive,
-        ]);
+        foreach ($this->assetsDir as $namespace => $directory) {
+            $files = FileHelper::findFiles($directory, [
+                'recursive' => $this->recursive,
+            ]);
 
-        foreach ($files as $file) {
-            $namespace = $this->assetsNamespace . ltrim(str_replace('/', '\\', substr(dirname($file), strlen($path))), '\\');
-            $this->bundles[] = rtrim($namespace, '\\') . '\\' . pathinfo($file, PATHINFO_FILENAME);
+            foreach ($files as $file) {
+                $fileNamespace = $namespace . ltrim(str_replace('/', '\\', substr(dirname($file), strlen($directory))), '\\');
+                $this->bundles[] = rtrim($fileNamespace, '\\') . '\\' . pathinfo($file, PATHINFO_FILENAME);
+            }
         }
 
         $this->bundles = array_unique($this->bundles);
